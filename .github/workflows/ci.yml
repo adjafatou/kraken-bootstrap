@@ -7,8 +7,34 @@ on:
   pull_request:
 
 jobs:
-  hello:
+  lint-test:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Display commit SHA
-        run: 'echo "Commit SHA: ${{ github.sha }}"'
+      - name: Recuperer le code
+        uses: actions/checkout@v7
+
+      - name: Installer Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Installer les dependances
+        run: pip install -r requirements-dev.txt
+
+      - name: Verifier la qualite du code
+        run: ruff check .
+
+      - name: Executer les tests
+        run: |
+          mkdir -p reports
+          pytest -q --junitxml=reports/junit.xml
+
+      - name: Archiver le rapport des tests
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: rapport-tests
+          path: reports/junit.xml
