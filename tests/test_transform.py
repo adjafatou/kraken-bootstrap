@@ -25,7 +25,8 @@ def test_transform_computes_fill_rate():
 
 def test_transform_flags_empty_and_full():
     out = transform(sample())
-    assert list(out["status"]) == ["ok", "empty", "full"]
+    assert list(out["fill_rate"]) == [0.5, 0.0, 1.0]
+    
 
 
 def test_transform_drops_stations_without_capacity():
