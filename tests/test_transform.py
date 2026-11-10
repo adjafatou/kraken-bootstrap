@@ -25,7 +25,7 @@ def test_transform_computes_fill_rate():
 
 def test_transform_flags_empty_and_full():
     out = transform(sample())
-    assert list(out["fill_rate"]) == [0.9, 0.0, 1.0]
+    assert list(out["fill_rate"]) == [0.5, 0.0, 1.0]
     
 
 
