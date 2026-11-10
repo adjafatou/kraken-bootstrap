@@ -9,6 +9,8 @@ on:
 jobs:
   lint-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Recuperer le code
@@ -38,3 +40,35 @@ jobs:
         with:
           name: rapport-tests
           path: reports/junit.xml
+
+  build-push:
+    runs-on: ubuntu-latest
+    needs: lint-test
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@v7
+
+      - name: Definir le nom de l'image
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
+      - name: Connexion a GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Construire et publier l'image Docker
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.IMAGE }}:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
